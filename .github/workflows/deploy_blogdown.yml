@@ -1,0 +1,33 @@
+on:
+  push:
+     tags:
+       - v*
+
+name: Blogdown
+
+jobs:
+  blogdown:
+    name: Render-Deploy
+    runs-on: macOS-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: r-lib/actions/setup-r@v1
+      - uses: r-lib/actions/setup-pandoc@v1
+      - name: Install dependencies
+        run: Rscript -e 'install.packages(c("reactable", "dplyr", "fs", "readr"))'
+      - name: Install rmarkdown
+        run: Rscript -e 'install.packages(c("rmarkdown","blogdown"))'
+      - name: Install Hugo
+        run: Rscript -e 'blogdown::install_hugo("0.83.1")'
+      - name: Render blog
+        run: Rscript -e 'blogdown::build_site(local = FALSE, run_hugo = TRUE, build_rmd = TRUE)'
+      - name: Install SSH Key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: 'placeholder'
+      - name: Adding Known Hosts
+        run: ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+      - name: Deploy with rsync
+        run: rsync -avz ./public/ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:/var/www/dressage-romand/
+
