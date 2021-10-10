@@ -5,8 +5,6 @@ categories:
 date: "2021-10-08"
 description: Programme des Championnats romands de dressage 2021 à Avenches.
 image: image_IENA.jpeg
-series:
-- Themes Guide
 tags:
 - Programme
 - 2021
